@@ -83,33 +83,35 @@ def save_one_box(xyxy, im, file=Path('im.jpg'), gain=1.02, pad=50, square=False,
         Image.fromarray(crop[..., ::-1]).save(f, quality=95, subsampling=0)  # save RGB
     return crop
 
-def get_ppl_dict():
+# def get_ppl_dict():
 
 
 def track_yolo_arrin(input_array):
-    for i,im2 in enumerate(input_array):
-        results = model.track(source=im2,tracker = 'bytetrack.yaml', persist=True, stream=True)
-        clssdict = results[0].names
-        if results[0].boxes.is_track:
-            conf_lst = results[0].boxes.conf.tolist()
-            index_list = []
+    
 
-            cls_lst = [clssdict[each] for each in results[0].boxes.cls.tolist()]
-            for i in len(cls_lst):
-                if cls_lst[i] == "Person":
-                    index_list.append(i)
+    # for i,im2 in enumerate(input_array):
+    #     results = model.track(source=im2,tracker = 'bytetrack.yaml', persist=True, stream=True)
+    #     clssdict = results[0].names
+    #     if results[0].boxes.is_track:
+    #         conf_lst = results[0].boxes.conf.tolist()
+    #         index_list = []
 
-            for i in index_list:
-                if conf_lst[i] < 50:
-                    index_list.pop(i)
+    #         cls_lst = [clssdict[each] for each in results[0].boxes.cls.tolist()]
+    #         for i in len(cls_lst):
+    #             if cls_lst[i] == "Person":
+    #                 index_list.append(i)
 
-            id_lst = results[0].boxes.id.tolist()
-            bbx_lst = results[0].boxes.xyxy.tolist()
+    #         for i in index_list:
+    #             if conf_lst[i] < 50:
+    #                 index_list.pop(i)
 
-            for idx in index_list:
-                activity_results = model.track(source=save_one_box(bbx_lst[idx], im2, save=False), persist=True)
-                act_clssdict = activity_results[0].names
-                activity_class = [act_clssdict[each] for each in activity_results[0].boxes.cls.tolist()][0]
+    #         id_lst = results[0].boxes.id.tolist()
+    #         bbx_lst = results[0].boxes.xyxy.tolist()
+
+    #         for idx in index_list:
+    #             activity_results = model.track(source=save_one_box(bbx_lst[idx], im2, save=False), persist=True)
+    #             act_clssdict = activity_results[0].names
+    #             activity_class = [act_clssdict[each] for each in activity_results[0].boxes.cls.tolist()][0]
                 
 
                 # people = {id_lst[idx]:{'type': cls_lst[idx], 'activity': labells,"confidence":conf_lst[idx],"crops":cidd}}
