@@ -87,9 +87,49 @@ def save_one_box(xyxy, im, file=Path('im.jpg'), gain=1.02, pad=50, square=False,
 
 
 def track_yolo_arrin(input_array):
-    
 
-    # for i,im2 in enumerate(input_array):
+
+    for i,im2 in enumerate(input_array):
+        activity_results = activity_model.track(source=im2,tracker = 'bytetrack.yaml',persist=True)
+        clssdict = activity_results[0].names
+        
+        #creating required lists form detection results only if it has tracking id 
+        if  activity_results[0].boxes.is_track:
+            conf_list = activity_results[0].boxes.conf.tolist()
+            id_list = activity_results[0].boxes.id.tolist()
+            class_list = [clssdict[each] for each in activity_results[0].boxes.cls.tolist()]
+            bbox_list = activity_results[0].boxes.xyxy.tolist()
+
+            #create crops and create cid for crop img
+            crops = []
+            for box in bbox_list:
+                crop = save_one_box(box, im2, save=False)
+                crops.append([crop])
+                
+            #filter the generated lists 
+            for i, conf in conf_list:
+                if conf < 50:
+                    conf_list.pop()
+                    id_list.pop()
+                    class_list.pop()
+                    bbox_list.pop()
+            
+            
+
+
+
+
+            #create list of detections list for each frame
+            for i in len(id_list):
+                detect_dict = {id_list[i]:{'type': class_list[i], 'activity': class_list[i],"confidence":conf_list[i],"crops":crops[]}}
+            
+            
+
+
+
+        # if activity_results[0].boxes.is_track:
+        #     conf_lst = activity_results[0].boxes.conf.tolist()
+
     #     results = model.track(source=im2,tracker = 'bytetrack.yaml', persist=True, stream=True)
     #     clssdict = results[0].names
     #     if results[0].boxes.is_track:
