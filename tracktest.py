@@ -92,39 +92,35 @@ def track_yolo_arrin(input_array):
     for i,im2 in enumerate(input_array):
         activity_results = activity_model.track(source=im2,tracker = 'bytetrack.yaml',persist=True)
         clssdict = activity_results[0].names
+        print(clssdict)
+        # frame_data = []
+        # #creating required lists form detection results only if it has tracking id 
+        # if  activity_results[0].boxes.is_track:
+        #     conf_list = [round(each,3) for each in activity_results[0].boxes.conf.tolist()]
+        #     id_list = activity_results[0].boxes.id.tolist()
+        #     class_list = [clssdict[each] for each in activity_results[0].boxes.cls.tolist()]
+        #     bbox_list = activity_results[0].boxes.xyxy.tolist()
+
+        #     #create crops and create cid for crop img
+        #     crops = []
+        #     for box in bbox_list:
+        #         crop = save_one_box(box, im2, save=False)
+        #         crops.append([crop])
+                 
+        #     #filter the generated lists 
+        #     for i in range(0,len(conf_list)):
+        #         if conf_list[i] < 0.50:
+        #             conf_list.pop(i)
+        #             id_list.pop(i)
+        #             class_list.pop(i)
+        #             bbox_list.pop(i)
         
-        #creating required lists form detection results only if it has tracking id 
-        if  activity_results[0].boxes.is_track:
-            conf_list = activity_results[0].boxes.conf.tolist()
-            id_list = activity_results[0].boxes.id.tolist()
-            class_list = [clssdict[each] for each in activity_results[0].boxes.cls.tolist()]
-            bbox_list = activity_results[0].boxes.xyxy.tolist()
-
-            #create crops and create cid for crop img
-            crops = []
-            for box in bbox_list:
-                crop = save_one_box(box, im2, save=False)
-                crops.append([crop])
-                
-            #filter the generated lists 
-            for i, conf in conf_list:
-                if conf < 50:
-                    conf_list.pop()
-                    id_list.pop()
-                    class_list.pop()
-                    bbox_list.pop()
-            
-            
-
-
-
-
-            #create list of detections list for each frame
-            for i in len(id_list):
-                detect_dict = {id_list[i]:{'type': class_list[i], 'activity': class_list[i],"confidence":conf_list[i],"crops":crops[]}}
-            
-            
-
+        #     #create list of detections list for each frame
+        #     for i in range(0,len(id_list)):
+        #         detect_dict = {id_list[i]:{'type': "Person", 'activity': class_list[i],"confidence":conf_list[i],"crops":crops[i]}}
+        #         frame_data.append(detect_dict)
+        # print(frame_data)
+        
 
 
         # if activity_results[0].boxes.is_track:
