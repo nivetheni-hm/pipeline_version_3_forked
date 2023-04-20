@@ -50,7 +50,7 @@ from db_push import push_db
 
 from lmdb_list_gen import attendance_lmdb_known, attendance_lmdb_unknown
 from facedatainsert_lmdb import add_member_to_lmdb
-from track import track_yolo_arrin
+from track import track_yolo
 # from anamoly_track import trackmain
 # from project_1_update_ import output_func
 # obj_model = torch.hub.load('ultralytics/yolov5', 'custom', path='./three_class_05_dec.pt')
@@ -262,7 +262,7 @@ def numpy_creation(device_id, urn, img_arr, timestamp,device_data):
     global image_count, cid_unpin_cnt, gif_batch, gif_frames
     
     image_count += 1
-    results = track_yolo_arrin(img_arr)
+    track_yolo(img_arr)
     pid = os.getpid()
     # print(pid, device_id)
     # if (image_count < 31):
@@ -441,10 +441,11 @@ def call_gstreamer(device_data):
     print("Got device info from DB")
     devs = []
     for i,key in enumerate(device_data):
-        
-        devs.append([key, device_data[key]])
+        if key == "2c5cd8b0-d065-11ed-a2ad-bfd40f08f32a":
+            print(key)
+            devs.append([key, device_data[key]])
     
-    with Pool(5) as p:
+    with Pool(len(devs)) as p:
         p.map(gst_mp4, devs)
 
             

@@ -1,2 +1,7 @@
 Gif_output/
 best_act.pt
+__pycache__/
+Hls_output/
+rename.py
+yolov8_three_class.pt
+nohup.out
