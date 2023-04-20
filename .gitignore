@@ -1,6 +1,4 @@
 Gif_output/
 mask_main.mp4
 test_data
-yolov8_three_class.pt
 best_act.pt
-tracktest.py
