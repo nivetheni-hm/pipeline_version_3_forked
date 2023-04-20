@@ -2,6 +2,7 @@ from ava_action_list import data
 
 object_score = {"Person":7}
 anamoly_rank = {'4': 1, '3': 1, '2': 2, '1': 10, '0': 1}
+# frame_info_anamoly = [{2.0: {'type': 'Person', 'activity': 'throwing', 'confidence': 0.896, 'anamoly_score': 26.56, 'activity_score': 10}}]
 # frame_info = [{2.0: {'type': 'Person', 'activity': 'throwing', 'confidence': 0.896}}]
 # frame_info = [{2: {'type': 'Person', 'activity': 'run', 'confidence': 0.5413001179695129}}]
 
@@ -101,6 +102,7 @@ def anamoly_score_calculator(frame_info):
 
 # print(anamoly_score_calculator(frame_info))
 
+# print( frame_weighted_avg(frame_info_anamoly))
 
 
 #[{1: {'type': 'Person', 'activity': 'carry/hold', 'confidence': 0.4854480028152466, 'anamoly score': None}}, {1: {'type': 'Person', 'activity': 'carry/hold', 'confidence': 0.4854480028152466}}, {1: {'type': 'Person', 'activity': 'carry/hold', 'confidence': 0.4854480028152466}}, {1: {'type': 'Person', 'activity': 'carry/hold', 'confidence': 0.4854480028152466}}, {1: {'type': 'Person', 'activity': 'carry/hold', 'confidence': 0.4854480028152466}}, {1: {'type': 'Person', 'activity': 'carry/hold', 'confidence': 0.4854480028152466}}, {1: {'type': 'Person', 'activity': 'carry/hold', 'confidence': 0.4854480028152466}}]
