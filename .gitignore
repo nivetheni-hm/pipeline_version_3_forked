@@ -5,3 +5,7 @@ Hls_output/
 rename.py
 yolov8_three_class.pt
 nohup.out
+mid/
+out1/
+test_data/
+in1/
