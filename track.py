@@ -96,8 +96,9 @@ def track_yolo(im2):
         clssdict = activity_results[0].names
         frame_data = []
         detections = sv.Detections.from_yolov8(activity_results[0])
-        if activity_results[0].boxes.id is not None:
-            activity_results[0].boxes.id = activity_results[0].boxes.id.cpu().numpy().astype(int)
+        # if activity_results[0].boxes.id is not None:
+        #     activity_results[0].boxes.id = activity_results[0].boxes.id.cpu().numpy().astype(int)
+        #     print(activity_results[0].boxes.id)
         
         #creating required lists form detection results only if it has tracking id 
         if  activity_results[0].boxes.is_track:
@@ -119,7 +120,6 @@ def track_yolo(im2):
                     id_list.pop(i)
                     class_list.pop(i)
                     bbox_list.pop(i)
-
         
             #create list of detections list for each frame
             for i in range(0,len(id_list)):
@@ -127,6 +127,9 @@ def track_yolo(im2):
                 frame_data.append(detect_dict)
 
             frame_info_anamoly = anamoly_score_calculator(frame_data)
+            
+            
+            
         else:
             print(activity_results[0].boxes)
         print(frame_data)
