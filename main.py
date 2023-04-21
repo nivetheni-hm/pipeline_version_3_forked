@@ -441,7 +441,7 @@ def call_gstreamer(device_data):
     print("Got device info from DB")
     devs = []
     for i,key in enumerate(device_data):
-        if key == "2c5cd8b0-d065-11ed-a2ad-bfd40f08f32a":
+        if key == "12b1d7c0-d066-11ed-83df-776209d52ccf":
             print(key)
             devs.append([key, device_data[key]])
     
