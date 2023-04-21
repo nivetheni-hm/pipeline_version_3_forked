@@ -11,12 +11,15 @@ from pathlib import Path
 import glob
 
 from anamoly import anamoly_score_calculator, frame_weighted_avg
+from json_converter import output_func
 
 activity_model = YOLO('best_act.pt')
 object_model = YOLO('yolov8_three_class.pt')
 
 frame_cnt = 0 
+final_batch = []
 batch_data = []
+
 def xyxy2xywh(x):
     # Convert nx4 boxes from [x1, y1, x2, y2] to [x, y, w, h] where xy1=top-left, xy2=bottom-right
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
@@ -108,7 +111,7 @@ def track_yolo(im2):
         cv2.imwrite("/home/nivetheni/TCI_express/mid/"+str(frame_cnt)+".jpg",activity_results[0].plot())
     clssdict = activity_results[0].names
     frame_data = []
-
+    
     conf_list = [round(each,3) for each in activity_results[0].boxes.conf.tolist()]
     print(conf_list)
     #creating required lists form detection results only if it has tracking id 
@@ -158,11 +161,26 @@ def track_yolo(im2):
         # print(frame_anamoly_wgt)
 
         final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":inferenced_im2}
+        print("FINAL FRAME: ", final_frame)
         
+        if final_frame is not None:
+            if len(batch_data) != 30:
+                batch_data.append(final_frame)
+            else:
+                final_batch.append(batch_data)
+                print("############################################################################################")
+                print("FRAME COUNT:", frame_cnt)
+                print("LENGTH: ", len(batch_data))
+                print("BATCH DATA:", final_batch)
+                output_func(final_batch)
+                # result = output_func(batch_data)
+                # print(result)
+                print("############################################################################################")
+                batch_data.clear()
+                final_batch.clear()
 
         if frame_cnt % 10 == 0:
             cv2.imwrite("/home/nivetheni/TCI_express/out1/"+str(frame_cnt)+".jpg",inferenced_im2)
-
 
 
 #unit testing track.py
