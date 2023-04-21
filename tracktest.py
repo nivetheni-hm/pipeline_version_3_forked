@@ -85,14 +85,34 @@ def save_one_box(xyxy, im, file=Path('im.jpg'), gain=1.02, pad=50, square=False,
 
 # def get_ppl_dict():
 
+# cv2.rectangle(result, (x, y), (x+w, y+h), (0, 0, 255), 2)
+
+def plot_bbox(bbox_list,conf_list,id_list,class_list,im2):
+    idx = 0
+    result = im2.copy()
+    for box in bbox_list:
+        text = str(id_list[idx])+" "+"person"+" "+str(class_list[idx])+" "+str(conf_list[idx])
+        cv2.rectangle(result, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 0, 255), 2)
+        cv2.putText(result, text, (int(box[0]), int(box[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+        idx=idx+1
+    return result
 
 def track_yolo_arrin(input_array):
 
 
     for i,im2 in enumerate(input_array):
         activity_results = activity_model.track(source=im2,tracker = 'bytetrack.yaml',persist=True)
-        clssdict = activity_results[0].names
-        print(clssdict)
+        conf_list = [round(each,3) for each in activity_results[0].boxes.conf.tolist()]
+        if  activity_results[0].boxes.is_track and len(conf_list) > 0:
+            clssdict = activity_results[0].names
+            
+            id_list = activity_results[0].boxes.id.tolist()
+            class_list = [clssdict[each] for each in activity_results[0].boxes.cls.tolist()]
+            bbox_list = activity_results[0].boxes.xyxy.tolist()
+            inferenced_im2 = plot_bbox(bbox_list,conf_list,id_list,class_list,im2)
+            cv2.imwrite("plot.jpg",inferenced_im2)
+            time.sleep(15)
+        # print(clssdict)
         # frame_data = []
         # #creating required lists form detection results only if it has tracking id 
         # if  activity_results[0].boxes.is_track:

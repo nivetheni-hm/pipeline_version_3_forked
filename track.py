@@ -87,16 +87,29 @@ def save_one_box(xyxy, im, file=Path('im.jpg'), gain=1.02, pad=50, square=False,
         Image.fromarray(crop[..., ::-1]).save(f, quality=95, subsampling=0)  # save RGB
     return crop
 
+def plot_bbox(bbox_list,conf_list,id_list,class_list,im2):
+    idx = 0
+    result = im2.copy()
+    for box in bbox_list:
+        text = str(id_list[idx])+" "+"person"+" "+str(class_list[idx])+" "+str(conf_list[idx])
+        cv2.rectangle(result, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 0, 255), 2)
+        cv2.putText(result, text, (int(box[0]), int(box[1])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+        idx=idx+1
+    return result
+
+
+
 def track_yolo(im2):
         global frame_cnt
         activity_results = activity_model.track(source=im2,tracker = 'botsort.yaml',persist=True)
         frame_cnt = frame_cnt + 1
-        # if frame_cnt % 10 == 0:
-        #     cv2.imwrite("/home/nivetheni/TCI_express/out1/"+str(frame_cnt)+".jpg",activity_results[0].plot())
+        if frame_cnt % 10 == 0:
+            cv2.imwrite("/home/nivetheni/TCI_express/in/"+str(frame_cnt)+".jpg",im2)
         clssdict = activity_results[0].names
         frame_data = []
-    
+
         conf_list = [round(each,3) for each in activity_results[0].boxes.conf.tolist()]
+
         #creating required lists form detection results only if it has tracking id 
         if  activity_results[0].boxes.is_track and len(conf_list) > 0:
             
@@ -118,6 +131,8 @@ def track_yolo(im2):
                     class_list.pop(i)
                     bbox_list.pop(i)
 
+            #plots bbox for detections whose confidence is more than 0.50
+            inferenced_im2 = plot_bbox(bbox_list,conf_list,id_list,class_list,im2)
         
             #create list of detections list for each frame
             for i in range(0,len(id_list)):
@@ -129,8 +144,12 @@ def track_yolo(im2):
             frame_anamoly_wgt = frame_weighted_avg(frame_info_anamoly)
             # print(frame_anamoly_wgt)
 
-            final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":activity_results[0].plot()}
-            
+            final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":inferenced_im2}
+
+            if frame_cnt % 10 == 0:
+                cv2.imwrite("/home/nivetheni/TCI_express/out1/"+str(frame_cnt)+".jpg",inferenced_im2)
+
+
             ## batching the frames
             # if frame_info_anamoly != []:
             #     batch_data.append(final_frame)
