@@ -4,11 +4,18 @@ import cv2
 import numpy as np
 from datetime import timedelta
 from pathlib import Path
+import os
+import torch
+from PIL import Image
+from pathlib import Path
 
+from anamoly import anamoly_score_calculator, frame_weighted_avg
 
 activity_model = YOLO('best_act.pt')
 object_model = YOLO('yolov8_three_class.pt')
 
+frame_cnt = 0 
+batch_data = []
 def xyxy2xywh(x):
     # Convert nx4 boxes from [x1, y1, x2, y2] to [x, y, w, h] where xy1=top-left, xy2=bottom-right
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
@@ -80,9 +87,64 @@ def save_one_box(xyxy, im, file=Path('im.jpg'), gain=1.02, pad=50, square=False,
         Image.fromarray(crop[..., ::-1]).save(f, quality=95, subsampling=0)  # save RGB
     return crop
 
-def track_yolo_arrin(input_array):
-    object_results = object_model.track(source=input_array, persist=True)
-    # object_conf = round(object_results[0].boxes.conf.item(),4)
-    # object_boxes = object_results[0].boxes.xyxy.tolist()[0]
+def track_yolo(im2):
+        global frame_cnt
+        activity_results = activity_model.track(source=im2,tracker = 'botsort.yaml',persist=True)
+        frame_cnt = frame_cnt + 1
+        # if frame_cnt % 10 == 0:
+        #     cv2.imwrite("/home/nivetheni/TCI_express/out1/"+str(frame_cnt)+".jpg",activity_results[0].plot())
+        clssdict = activity_results[0].names
+        frame_data = []
+    
+        conf_list = [round(each,3) for each in activity_results[0].boxes.conf.tolist()]
+        #creating required lists form detection results only if it has tracking id 
+        if  activity_results[0].boxes.is_track and len(conf_list) > 0:
+            
+            id_list = activity_results[0].boxes.id.tolist()
+            class_list = [clssdict[each] for each in activity_results[0].boxes.cls.tolist()]
+            bbox_list = activity_results[0].boxes.xyxy.tolist()
 
-    return object_results
+            #create crops and create cid for crop img
+            crops = []
+            for box in bbox_list:
+                crop = save_one_box(box, im2, save=False)
+                crops.append([crop])
+                 
+            #filter the generated lists 
+            for i in range(0,len(conf_list)):
+                if conf_list[i] < 0.50:
+                    conf_list.pop(i)
+                    id_list.pop(i)
+                    class_list.pop(i)
+                    bbox_list.pop(i)
+
+        
+            #create list of detections list for each frame
+            for i in range(0,len(id_list)):
+                detect_dict = {id_list[i]:{'type': "Person", 'activity': class_list[i],"confidence":conf_list[i],"crops":crops[i]}}
+                frame_data.append(detect_dict)
+
+            frame_info_anamoly = anamoly_score_calculator(frame_data)
+            # print(frame_info_anamoly)
+            frame_anamoly_wgt = frame_weighted_avg(frame_info_anamoly)
+            # print(frame_anamoly_wgt)
+
+            final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":activity_results[0].plot()}
+            
+            ## batching the frames
+            # if frame_info_anamoly != []:
+            #     batch_data.append(final_frame)
+            #     if len(batch_data)==30:
+                      ##call json structuring   
+
+
+        # else:
+        #     print(activity_results[0].boxes)
+        
+
+# dir_list = os.listdir("/home/nivetheni/TCI_express/test_data")
+# input_array = [] 
+# for each in dir_list:
+#     arr  =  cv2.imread("/home/nivetheni/TCI_express/test_data/"+each)
+#     track_yolo(arr)
+#     # input_array.append(arr)
