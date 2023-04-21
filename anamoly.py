@@ -81,7 +81,6 @@ def anamoly_score_calculator(frame_info):
                 [detection[each] for each in detection][0]['anamoly_score'] = float("{:.2f}".format(anamoly_score))
                 [detection[each] for each in detection][0]['activity_score'] = activity_score_val
 
-
             else:
                 anamoly_score = None
                 [detection[each] for each in detection][0]['anamoly_score'] = anamoly_score
