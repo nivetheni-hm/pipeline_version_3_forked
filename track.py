@@ -124,17 +124,17 @@ def track_yolo(im2):
                 frame_data.append(detect_dict)
 
             frame_info_anamoly = anamoly_score_calculator(frame_data)
-            # print(frame_info_anamoly)
+            print(frame_info_anamoly)
             frame_anamoly_wgt = frame_weighted_avg(frame_info_anamoly)
-            # print(frame_anamoly_wgt)
+            print(frame_anamoly_wgt)
 
             final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":activity_results[0].plot()}
-            
-            ## batching the frames
+            print(final_frame)
+            # # batching the frames
             # if frame_info_anamoly != []:
             #     batch_data.append(final_frame)
             #     if len(batch_data)==30:
-                      ##call json structuring   
+            #           ##call json structuring   
 
 
         # else:
