@@ -15,7 +15,7 @@ activity_model = YOLO('best_act.pt')
 object_model = YOLO('yolov8_three_class.pt')
 
 frame_cnt = 0 
-
+batch_data = []
 def xyxy2xywh(x):
     # Convert nx4 boxes from [x1, y1, x2, y2] to [x, y, w, h] where xy1=top-left, xy2=bottom-right
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
@@ -91,18 +91,15 @@ def track_yolo(im2):
         global frame_cnt
         activity_results = activity_model.track(source=im2,tracker = 'botsort.yaml',persist=True)
         frame_cnt = frame_cnt + 1
-        if frame_cnt % 10 == 0:
-            cv2.imwrite("/home/nivetheni/TCI_express/out1/"+str(frame_cnt)+".jpg",activity_results[0].plot())
+        # if frame_cnt % 10 == 0:
+        #     cv2.imwrite("/home/nivetheni/TCI_express/out1/"+str(frame_cnt)+".jpg",activity_results[0].plot())
         clssdict = activity_results[0].names
         frame_data = []
-        detections = sv.Detections.from_yolov8(activity_results[0])
-        # if activity_results[0].boxes.id is not None:
-        #     activity_results[0].boxes.id = activity_results[0].boxes.id.cpu().numpy().astype(int)
-        #     print(activity_results[0].boxes.id)
-        
+    
+        conf_list = [round(each,3) for each in activity_results[0].boxes.conf.tolist()]
         #creating required lists form detection results only if it has tracking id 
-        if  activity_results[0].boxes.is_track:
-            conf_list = [round(each,3) for each in activity_results[0].boxes.conf.tolist()]
+        if  activity_results[0].boxes.is_track and len(conf_list) > 0:
+            
             id_list = activity_results[0].boxes.id.tolist()
             class_list = [clssdict[each] for each in activity_results[0].boxes.cls.tolist()]
             bbox_list = activity_results[0].boxes.xyxy.tolist()
@@ -127,12 +124,22 @@ def track_yolo(im2):
                 frame_data.append(detect_dict)
 
             frame_info_anamoly = anamoly_score_calculator(frame_data)
+            # print(frame_info_anamoly)
+            frame_anamoly_wgt = frame_weighted_avg(frame_info_anamoly)
+            # print(frame_anamoly_wgt)
+
+            final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":activity_results[0].plot()}
             
-            
-            
-        else:
-            print(activity_results[0].boxes)
-        print(frame_data)
+            ## batching the frames
+            # if frame_info_anamoly != []:
+            #     batch_data.append(final_frame)
+            #     if len(batch_data)==30:
+                      ##call json structuring   
+
+
+        # else:
+        #     print(activity_results[0].boxes)
+        
 
 # dir_list = os.listdir("/home/nivetheni/TCI_express/test_data")
 # input_array = [] 
