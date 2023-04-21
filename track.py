@@ -118,7 +118,7 @@ def track_yolo(im2):
         class_list = [clssdict[each] for each in activity_results[0].boxes.cls.tolist()]
         bbox_list = activity_results[0].boxes.xyxy.tolist()
 
-        #create crops and create cid for crop img
+        #create crops 
         crops = []
         for box in bbox_list:
             crop = save_one_box(box, im2, save=False)
@@ -130,7 +130,7 @@ def track_yolo(im2):
         class_list1 = []
         bbox_list1 = []
         conf_list = []
-
+        crops1 = []
         #filter the generated lists 
         for i in range(0,len(conf_list1)):
             print(conf_list1[i])
@@ -139,11 +139,12 @@ def track_yolo(im2):
                 id_list1.append(id_list[i])
                 class_list1.append(class_list[i])
                 bbox_list1.append(bbox_list[i])
+                crops1.append(crops[i])
 
         id_list = id_list1
         class_list = class_list1
         bbox_list = bbox_list1
-
+        crops = crops1
         #plots bbox for detections whose confidence is more than 0.50
         inferenced_im2 = plot_bbox(bbox_list,conf_list,id_list,class_list,im2)
     
