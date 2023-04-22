@@ -109,7 +109,7 @@ def track_yolo(im2, device_data, datainfo):
     # if frame_cnt % 10 == 0:
     #     cv2.imwrite("/home/nivetheni/TCI_express/in/"+str(frame_cnt)+".jpg",im2)
     if frame_cnt % 10 == 0:
-        cv2.imwrite("/home/nivetheni/nivetheni_TCI/pipeline_version_3/mid/"+str(frame_cnt)+".jpg", activity_results[0].plot())
+        cv2.imwrite("./mid/"+str(frame_cnt)+".jpg", activity_results[0].plot())
     clssdict = activity_results[0].names
     frame_data = []
     
