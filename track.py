@@ -101,19 +101,20 @@ def plot_bbox(bbox_list,conf_list,id_list,class_list,im2):
         idx=idx+1
     return result
 
-def track_yolo(im2):
+def track_yolo(im2, device_data, datainfo):
+    
     global frame_cnt
     activity_results = activity_model.track(source=im2,tracker = 'bytetrack.yaml',persist=True)
     frame_cnt = frame_cnt + 1
     # if frame_cnt % 10 == 0:
     #     cv2.imwrite("/home/nivetheni/TCI_express/in/"+str(frame_cnt)+".jpg",im2)
     if frame_cnt % 10 == 0:
-        cv2.imwrite("/home/nivetheni/TCI_express/mid/"+str(frame_cnt)+".jpg",activity_results[0].plot())
+        cv2.imwrite("/home/nivetheni/nivetheni_TCI/pipeline_version_3/mid/"+str(frame_cnt)+".jpg", activity_results[0].plot())
     clssdict = activity_results[0].names
     frame_data = []
     
     conf_list = [round(each,3) for each in activity_results[0].boxes.conf.tolist()]
-    print(conf_list)
+    # print(conf_list)
     #creating required lists form detection results only if it has tracking id 
     if  activity_results[0].boxes.is_track and len(conf_list) > 0:
         
@@ -127,7 +128,7 @@ def track_yolo(im2):
             crop = save_one_box(box, im2, save=False)
             crops.append([crop])
         
-        print(conf_list)
+        # print(conf_list)
         conf_list1 = conf_list
         id_list1 = []
         class_list1 = []
@@ -136,7 +137,7 @@ def track_yolo(im2):
         crops1 = []
         #filter the generated lists 
         for i in range(0,len(conf_list1)):
-            print(conf_list1[i])
+            # print(conf_list1[i])
             if conf_list1[i] > 0.50:
                 conf_list.append(conf_list1[i])
                 id_list1.append(id_list[i])
@@ -150,6 +151,8 @@ def track_yolo(im2):
         crops = crops1
         #plots bbox for detections whose confidence is more than 0.50
         inferenced_im2 = plot_bbox(bbox_list,conf_list,id_list,class_list,im2)
+        
+        cv2.imwrite("./inferenced/"+str(frame_cnt)+".jpg", inferenced_im2)
     
         #create list of detections list for each frame
         for i in range(0,len(id_list)):
@@ -161,34 +164,33 @@ def track_yolo(im2):
         frame_anamoly_wgt = frame_weighted_avg(frame_info_anamoly)
         # print(frame_anamoly_wgt)
 
-        final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":inferenced_im2}
-        print("FINAL FRAME: ", final_frame)
+        final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":[inferenced_im2]}
         
         if final_frame is not None:
             if len(batch_data) != 30:
                 batch_data.append(final_frame)
             else:
-                final_batch.append(batch_data)
+                # final_batch = [batch_data]
                 print("############################################################################################")
                 print("FRAME COUNT:", frame_cnt)
                 print("LENGTH: ", len(batch_data))
-                print("BATCH DATA:", final_batch)
-                output_func(final_batch)
-                # result = output_func(batch_data)
-                # print(result)
+                # print("BATCH DATA:", final_batch)
+                # output_func([batch_data])
+                result = output_func([batch_data])
+                print("RESULT: \n", result)
                 print("############################################################################################")
                 batch_data.clear()
-                final_batch.clear()
+                # final_batch.clear()
 
         if frame_cnt % 10 == 0:
-            cv2.imwrite("/home/nivetheni/TCI_express/out1/"+str(frame_cnt)+".jpg",inferenced_im2)
+            cv2.imwrite("./out1/"+str(frame_cnt)+".jpg",inferenced_im2)
 
 
 #unit testing track.py
 # Get the list of all files inside in folder
 for i in range(596,1897):
-    print("/home/nivetheni/TCI_express/in1/image_"+str(i)+".jpg")
-    im2 = cv2.imread("/home/nivetheni/TCI_express/in1/image_"+str(i)+".jpg")
+    print("./in1/image_"+str(i)+".jpg")
+    im2 = cv2.imread("./in1/image_"+str(i)+".jpg")
     track_yolo(im2)
 
 # im2 = cv2.imread("/home/nivetheni/TCI_express/in1/image_1261.jpg")

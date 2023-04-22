@@ -248,7 +248,7 @@ def device_hls_push(device_id, device_info):
     status = push_db(hls_url, device_id)
     return status
 
-def numpy_creation(device_id, urn, img_arr, timestamp,device_data):
+def numpy_creation(device_id, urn, img_arr, timestamp, device_data):
     print(device_id)
     # filename for mp4
     video_name_gif = gif_path + '/' + str(device_id)
@@ -262,7 +262,9 @@ def numpy_creation(device_id, urn, img_arr, timestamp,device_data):
     global image_count, cid_unpin_cnt, gif_batch, gif_frames
     
     image_count += 1
-    track_yolo(img_arr)
+    
+    datainfo = [known_whitelist_faces, known_blacklist_faces, known_whitelist_id, known_blacklist_id]
+    track_yolo(img_arr, device_data, datainfo)
     pid = os.getpid()
     # print(pid, device_id)
     # if (image_count < 31):
@@ -515,14 +517,14 @@ def load_lmdb_fst(mem_data):
 async def main():
     try:
 
-        # remove_cnts("./lmdb")
-        # load_lmdb_list()
-        # print("removed lmdb contents")
-        # mem_data = fetch_db_mem()
-        # # print(mem_data)
+        remove_cnts("./lmdb")
+        load_lmdb_list()
+        print("removed lmdb contents")
+        mem_data = fetch_db_mem()
+        # print(mem_data)
         
-        # load_lmdb_fst(mem_data)
-        # load_lmdb_list()
+        load_lmdb_fst(mem_data)
+        load_lmdb_list()
 
         device_data = fetch_db()
         # print(device_data)

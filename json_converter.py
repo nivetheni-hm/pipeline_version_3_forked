@@ -95,9 +95,6 @@ def output_func(my_list):
     count_non_empty = sum(1 for item in my_list if item != '')
     sub_my_list = my_list[0]
     h=len(my_list[0])
-    
-    print("SUB LIST:")
-    print(sub_my_list)
     last_frame_data = []
     for i in range(1, len(sub_my_list)):
         if len(sub_my_list[h-i]["detection_info"]) > 0:
@@ -117,6 +114,7 @@ def output_func(my_list):
                     cidss_dic[list(every.keys())[0]].append(every[list(every.keys())[0]]['crops'])
                 else:
                     cidss_dic[list(every.keys())[0]].append(every[list(every.keys())[0]]['crops'])
+
         if each["cid"]:
             if "frame_cids" not in cidss_dic:
                 cidss_dic["frame_cids"] = []
