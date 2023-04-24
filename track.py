@@ -199,7 +199,9 @@ def track_yolo(im2, device_data, datainfo):
         frame_info_anamoly = anamoly_score_calculator(frame_data)
         # # print(frame_info_anamoly)
         frame_anamoly_wgt = frame_weighted_avg(frame_info_anamoly)
-        # # print(frame_anamoly_wgt)
+        # print(frame_anamoly_wgt)
+        # cidd = None
+        # if frame_info_anamoly != []
 
         final_frame = {"frame_id":frame_cnt,"frame_anamoly_wgt":frame_anamoly_wgt,"detection_info":frame_info_anamoly,"cid":[inferenced_im2]}
         
