@@ -443,14 +443,12 @@ def call_gstreamer(device_data):
     print("Got device info from DB")
     devs = []
     for i,key in enumerate(device_data):
-        if key == "12b1d7c0-d066-11ed-83df-776209d52ccf":
-            print(key)
-            devs.append([key, device_data[key]])
+        # if key == "12b1d7c0-d066-11ed-83df-776209d52ccf":
+        print(key)
+        devs.append([key, device_data[key]])
     
     with Pool(len(devs)) as p:
         p.map(gst_mp4, devs)
-
-            
 
 async def device_info(msg):
     if msg.subject == "service.device_discovery":
@@ -513,6 +511,21 @@ def load_lmdb_fst(mem_data):
         i = i+1
         add_member_to_lmdb(each)
         print("inserting ",each)
+        
+# def load_lmdb_list_datainfo():
+#     known_whitelist_faces1, known_whitelist_id1 = attendance_lmdb_known()
+#     known_blacklist_faces1, known_blacklist_id1 = attendance_lmdb_unknown()
+#     return [known_whitelist_faces1,known_blacklist_faces1,known_whitelist_id1, known_blacklist_id1]
+        
+# def get_info():
+#     remove_cnts("./lmdb")
+#     print("removed lmdb contents")
+#     mem_data = fetch_db_mem()
+#     # print(mem_data)
+    
+#     load_lmdb_fst(mem_data)
+#     data_info = load_lmdb_list_datainfo()
+#     return data_info
 
 async def main():
     try:
@@ -521,13 +534,13 @@ async def main():
         load_lmdb_list()
         print("removed lmdb contents")
         mem_data = fetch_db_mem()
-        # print(mem_data)
+        print(mem_data)
         
         load_lmdb_fst(mem_data)
         load_lmdb_list()
 
         device_data = fetch_db()
-        # print(device_data)
+        # # print(device_data)
         call_gstreamer(device_data)
 
         await nc_client.connect(servers=nats_urls) # Connect to NATS cluster!
