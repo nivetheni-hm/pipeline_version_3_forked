@@ -23,6 +23,9 @@ env = lmdb.open('./lmdb/face-detection.lmdb',
 known_db = env.open_db(b'white_list')
 unknown_db = env.open_db(b'black_list')
 
+# creation of directories for cid storage
+cid_path = "./image"
+
 def conv_img2bytes(image_path):
     image  = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) 
@@ -38,7 +41,9 @@ def cid_to_image(cid):
     #'ipfs --api={ipfs_url} add {file_path} -Q'.format(ipfs_url=ipfs_url, file_path=src_file)
     command = 'ipfs --api={ipfs_url} get {cid}'.format(ipfs_url=ipfs_url,cid=cid)
     output = sp.getoutput(command)
-    image_path = "./image/"+str(cid)+".jpg"
+    if os.path.exists(cid_path) is False:
+        os.mkdir(cid_path)
+    image_path = cid_path+str(cid)+".jpg"
     os.rename(cid, image_path)
     return image_path
 
