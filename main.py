@@ -114,6 +114,8 @@ veh_pub = True
 only_vehicle_batch_cnt = 0
 unique_device = []
 
+que = Queue()
+
 def remove_cnts(folder):
     for filename in os.listdir(folder):
         file_path = os.path.join(folder, filename)
@@ -159,6 +161,7 @@ async def json_publish_activity(primary):
     print(" ")
     print(f'Ack: stream={ack.stream}, sequence={ack.seq}')
     print("Activity is getting published")
+
 
 # def activity_trackCall(source, device_data, datainfo):
 #     global only_vehicle_batch_cnt,veh_pub
@@ -249,8 +252,10 @@ def device_hls_push(device_id, device_info):
     return status
 
 def numpy_creation(device_id, urn, img_arr, timestamp, device_data):
-    print(device_id)
+    print(img_arr)
+    # print(device_id)
     # filename for mp4
+    
     video_name_gif = gif_path + '/' + str(device_id)
     if not os.path.exists(video_name_gif):
         os.makedirs(video_name_gif, exist_ok=True)
@@ -264,46 +269,49 @@ def numpy_creation(device_id, urn, img_arr, timestamp, device_data):
     image_count += 1
     
     datainfo = [known_whitelist_faces, known_blacklist_faces, known_whitelist_id, known_blacklist_id]
+    que.put([img_arr, device_data, datainfo])
+    
+    print()
     track_yolo(img_arr, device_data, datainfo)
     pid = os.getpid()
-    # print(pid, device_id)
-    # if (image_count < 31):
-    #     numpy_frames.append(img_arr)
-    #     gif_frames.append(img_arr)
-    # elif (image_count >= 31):
-    #     cv2.imwrite(device_id+".jpg",img_arr)
-    #     # print(timestamp)
+    print(pid, device_id)
+    if (image_count < 31):
+        numpy_frames.append(img_arr)
+        gif_frames.append(img_arr)
+    elif (image_count >= 31):
+        cv2.imwrite(device_id+".jpg",img_arr)
+        # print(timestamp)
 
-    #     datainfo = [known_whitelist_faces, known_blacklist_faces,known_whitelist_id,known_blacklist_id]
-    #     # Process(target = config_func,args = (numpy_frames, device_data,datainfo,)).start()
-    #     # config_func(numpy_frames, device_data,datainfo)
-    #     gif_batch += 1 
+        datainfo = [known_whitelist_faces, known_blacklist_faces,known_whitelist_id,known_blacklist_id]
+        # Process(target = config_func,args = (numpy_frames, device_data,datainfo,)).start()
+        # config_func(numpy_frames, device_data,datainfo)
+        gif_batch += 1 
 
         
-    #     if gif_batch == 5:
-    #         gif_frames = gif_frames[-100:]
-    #         print(timestamp)
-    #         print("Images added: ", len(gif_frames))
-    #         print("Saving GIF file")
-    #         with imageio.get_writer(path, mode="I") as writer:
-    #             for idx, frame in enumerate(gif_frames):
-    #                 print("Adding frame to GIF file: ", idx + 1)
-    #                 writer.append_data(frame)
-    #         queue.put(path)
-    #         # print("PATH:", path)
-    #         command = 'ipfs --api={ipfs_url} add {file_path} -Q'.format(ipfs_url=ipfs_url, file_path=path)
-    #         gif_cid = sp.getoutput(command)
-    #         # print(gif_cid)
+        if gif_batch == 5:
+            gif_frames = gif_frames[-100:]
+            print(timestamp)
+            print("Images added: ", len(gif_frames))
+            print("Saving GIF file")
+            with imageio.get_writer(path, mode="I") as writer:
+                for idx, frame in enumerate(gif_frames):
+                    print("Adding frame to GIF file: ", idx + 1)
+                    writer.append_data(frame)
+            queue.put(path)
+            # print("PATH:", path)
+            command = 'ipfs --api={ipfs_url} add {file_path} -Q'.format(ipfs_url=ipfs_url, file_path=path)
+            gif_cid = sp.getoutput(command)
+            # print(gif_cid)
             
-    #         # os.remove(path)
-    #         # print("The path has been removed")
-    #         # await device_snap_pub(device_id = device_id, urn=urn, gif_cid = gif_cid, time_stamp = timestamp)
-    #         # asyncio.run(device_snap_pub(device_id = device_id, urn=urn, gif_cid = gif_cid, time_stamp = timestamp))
+            # os.remove(path)
+            # print("The path has been removed")
+            # await device_snap_pub(device_id = device_id, urn=urn, gif_cid = gif_cid, time_stamp = timestamp)
+            # asyncio.run(device_snap_pub(device_id = device_id, urn=urn, gif_cid = gif_cid, time_stamp = timestamp))
             
-    #         frames.clear()
-    #         image_count = 0  
-    #     image_count = 0
-    #     numpy_frames.clear()
+            frames.clear()
+            image_count = 0  
+        image_count = 0
+        numpy_frames.clear()
 
 
 def gst_hls(device_id, device_info):
@@ -410,11 +418,11 @@ def gst_mp4(dev):
     
     try:
         if((encode_type.lower()) == "h264"):
-            pipeline = Gst.parse_launch('rtspsrc name=g_rtspsrc_{device_id} location={location} latency=200 protocols="tcp" user-id={username} user-pw={password} !  rtph264depay name=g_depay_{device_id} ! h264parse name=g_parse_{device_id} ! avdec_h264 name=h_decode_{device_id} ! videoconvert name=h_videoconvert_{device_id} ! videoscale name=h_videoscale_{device_id} ! video/x-raw,format=BGR,width=1920,height=1080,pixel-aspect-ratio=1/1,bpp=24 ! queue ! appsink name=g_sink_{device_id} sync=false max-buffers=1 drop=true'.format(location=location, device_id=device_id, username=username, password=password))
+            pipeline = Gst.parse_launch('rtspsrc name=g_rtspsrc_{device_id} location={location} latency=200 protocols="tcp" user-id={username} user-pw={password} !  rtph264depay name=g_depay_{device_id} ! h264parse name=g_parse_{device_id} ! avdec_h264 name=h_decode_{device_id} ! videoconvert name=h_videoconvert_{device_id} ! videoscale name=h_videoscale_{device_id} ! videorate name=h_videorate_{device_id} ! video/x-raw,format=BGR,framerate=15/1,width=1920,height=1080,pixel-aspect-ratio=1/1,bpp=24 ! appsink name=g_sink_{device_id} sync=false max-buffers=1 drop=true'.format(location=location, device_id=device_id, username=username, password=password))
         elif((encode_type.lower()) == "h265"):
-            pipeline = Gst.parse_launch('rtspsrc name=g_rtspsrc_{device_id} location={location} latency=200 protocols="tcp" user-id={username} user-pw={password} !  rtph265depay name=g_depay_{device_id} ! h265parse name=g_parse_{device_id} ! avdec_h265 name=h_decode_{device_id} ! videoconvert name=h_videoconvert_{device_id} ! videoscale name=h_videoscale_{device_id} ! video/x-raw,format=BGR,width=1920,height=1080,pixel-aspect-ratio=1/1,bpp=24 ! queue ! appsink name=g_sink_{device_id} sync=false max-buffers=1 drop=true'.format(location=location, device_id=device_id, username=username, password=password))
+            pipeline = Gst.parse_launch('rtspsrc name=g_rtspsrc_{device_id} location={location} latency=200 protocols="tcp" user-id={username} user-pw={password} !  rtph265depay name=g_depay_{device_id} ! h265parse name=g_parse_{device_id} ! avdec_h265 name=h_decode_{device_id} ! videoconvert name=h_videoconvert_{device_id} ! videoscale name=h_videoscale_{device_id} ! videorate name=h_videorate_{device_id} ! video/x-raw,format=BGR,framerate=15/1,width=1920,height=1080,pixel-aspect-ratio=1/1,bpp=24 ! appsink name=g_sink_{device_id} sync=false max-buffers=1 drop=true'.format(location=location, device_id=device_id, username=username, password=password))
         elif((encode_type.lower()) == "mp4"):
-            pipeline = Gst.parse_launch('rtspsrc name=g_rtspsrc_{device_id} location={location} protocols="tcp" ! decodebin name=g_decode_{device_id} ! videoconvert name=g_videoconvert_{device_id} ! videoscale name=g_videoscale_{device_id} ! video/x-raw,width=640, height=320 ! appsink name=g_sink_{device_id}'.format(location=location, device_id = device_id))
+            pipeline = Gst.parse_launch('rtspsrc name=g_rtspsrc_{device_id} location={location} protocols="tcp" ! decodebin name=g_decode_{device_id} ! videoconvert name=g_videoconvert_{device_id} ! videorate name=h_videorate_{device_id} ! videoscale name=g_videoscale_{device_id} ! video/x-raw,framerate=15/1,format=BGR,width=1920,height=1080,pixel-aspect-ratio=1/1,bpp=24 ! appsink name=g_sink_{device_id} sync=false max-buffers=1 drop=true'.format(location=location, device_id = device_id))
         if not pipeline:
             print("Not all elements could be created.")
         else:
@@ -433,7 +441,7 @@ def gst_mp4(dev):
         if ret == Gst.StateChangeReturn.FAILURE:
             print("Unable to set the pipeline to the playing state.")
             
-        GLib.MainLoop().run()
+        
             
     except TypeError as e:
         print(TypeError," gstreamer Gif error >> ", e)  
@@ -442,13 +450,35 @@ def gst_mp4(dev):
 def call_gstreamer(device_data):
     print("Got device info from DB")
     devs = []
+    test_rtsp = ["rtsp://216.48.184.201:8554//stream1","rtsp://216.48.184.201:8554//stream2"]
     for i,key in enumerate(device_data):
+        #"rtsp://216.48.184.201:8554//stream1"
         # if key == "12b1d7c0-d066-11ed-83df-776209d52ccf":
         print(key)
-        devs.append([key, device_data[key]])
-    
-    with Pool(len(devs)) as p:
-        p.map(gst_mp4, devs)
+        devs.append(key)
+        device_data[key]["rtsp"] = test_rtsp[i]
+        device_data[key]["videoEncodingInformation"] = "MP4"
+        devs.append(device_data[key])
+        gst_mp4(devs)
+        # process.start()
+        # gst_mp4(devs)
+        devs.clear()
+        print(device_data[key])
+        # i = i+1
+        if i == 1:
+            break
+    GLib.MainLoop().run()
+    # while True:
+    #     print(que.get())
+
+    #     # if key == "12b1d7c0-d066-11ed-83df-776209d52ccf":
+        
+    #     device_data[key]['rtsp'] = "rtsp://216.48.184.201:8554//stream1"
+    #     devs.append([key, device_data[key]])
+    #     print(device_data[key])
+    #     break
+    # with Pool(len(devs)) as p:
+    #     p.map(gst_mp4, devs)
 
 async def device_info(msg):
     if msg.subject == "service.device_discovery":
