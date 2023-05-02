@@ -256,62 +256,62 @@ def numpy_creation(device_id, urn, img_arr, timestamp, device_data):
     # print(device_id)
     # filename for mp4
     
-    video_name_gif = gif_path + '/' + str(device_id)
-    if not os.path.exists(video_name_gif):
-        os.makedirs(video_name_gif, exist_ok=True)
+#     video_name_gif = gif_path + '/' + str(device_id)
+#     if not os.path.exists(video_name_gif):
+#         os.makedirs(video_name_gif, exist_ok=True)
         
-    timestamp = re.sub(r'[^\w\s]','',timestamp)
+#     timestamp = re.sub(r'[^\w\s]','',timestamp)
     
-    path = video_name_gif + '/' + str(timestamp).replace(' ','') + '.gif'
+#     path = video_name_gif + '/' + str(timestamp).replace(' ','') + '.gif'
     
-    global image_count, cid_unpin_cnt, gif_batch, gif_frames
+#     global image_count, cid_unpin_cnt, gif_batch, gif_frames
     
-    image_count += 1
+#     image_count += 1
     
-    datainfo = [known_whitelist_faces, known_blacklist_faces, known_whitelist_id, known_blacklist_id]
-    que.put([img_arr, device_data, datainfo])
+#     datainfo = [known_whitelist_faces, known_blacklist_faces, known_whitelist_id, known_blacklist_id]
+#     que.put([img_arr, device_data, datainfo])
     
-    print()
-    track_yolo(img_arr, device_data, datainfo)
-    pid = os.getpid()
-    print(pid, device_id)
-    if (image_count < 31):
-        numpy_frames.append(img_arr)
-        gif_frames.append(img_arr)
-    elif (image_count >= 31):
-        cv2.imwrite(device_id+".jpg",img_arr)
-        # print(timestamp)
+#     print()
+#     track_yolo(img_arr, device_data, datainfo)
+#     pid = os.getpid()
+#     print(pid, device_id)
+#     if (image_count < 31):
+#         numpy_frames.append(img_arr)
+#         gif_frames.append(img_arr)
+#     elif (image_count >= 31):
+#         cv2.imwrite(device_id+".jpg",img_arr)
+#         # print(timestamp)
 
-        datainfo = [known_whitelist_faces, known_blacklist_faces,known_whitelist_id,known_blacklist_id]
-        # Process(target = config_func,args = (numpy_frames, device_data,datainfo,)).start()
-        # config_func(numpy_frames, device_data,datainfo)
-        gif_batch += 1 
+#         datainfo = [known_whitelist_faces, known_blacklist_faces,known_whitelist_id,known_blacklist_id]
+#         # Process(target = config_func,args = (numpy_frames, device_data,datainfo,)).start()
+#         # config_func(numpy_frames, device_data,datainfo)
+#         gif_batch += 1 
 
         
-        if gif_batch == 5:
-            gif_frames = gif_frames[-100:]
-            print(timestamp)
-            print("Images added: ", len(gif_frames))
-            print("Saving GIF file")
-            with imageio.get_writer(path, mode="I") as writer:
-                for idx, frame in enumerate(gif_frames):
-                    print("Adding frame to GIF file: ", idx + 1)
-                    writer.append_data(frame)
-            queue.put(path)
-            # print("PATH:", path)
-            command = 'ipfs --api={ipfs_url} add {file_path} -Q'.format(ipfs_url=ipfs_url, file_path=path)
-            gif_cid = sp.getoutput(command)
-            # print(gif_cid)
+#         if gif_batch == 5:
+#             gif_frames = gif_frames[-100:]
+#             print(timestamp)
+#             print("Images added: ", len(gif_frames))
+#             print("Saving GIF file")
+#             with imageio.get_writer(path, mode="I") as writer:
+#                 for idx, frame in enumerate(gif_frames):
+#                     print("Adding frame to GIF file: ", idx + 1)
+#                     writer.append_data(frame)
+#             queue.put(path)
+#             # print("PATH:", path)
+#             command = 'ipfs --api={ipfs_url} add {file_path} -Q'.format(ipfs_url=ipfs_url, file_path=path)
+#             gif_cid = sp.getoutput(command)
+#             # print(gif_cid)
             
-            # os.remove(path)
-            # print("The path has been removed")
-            # await device_snap_pub(device_id = device_id, urn=urn, gif_cid = gif_cid, time_stamp = timestamp)
-            # asyncio.run(device_snap_pub(device_id = device_id, urn=urn, gif_cid = gif_cid, time_stamp = timestamp))
+#             # os.remove(path)
+#             # print("The path has been removed")
+#             # await device_snap_pub(device_id = device_id, urn=urn, gif_cid = gif_cid, time_stamp = timestamp)
+#             # asyncio.run(device_snap_pub(device_id = device_id, urn=urn, gif_cid = gif_cid, time_stamp = timestamp))
             
-            frames.clear()
-            image_count = 0  
-        image_count = 0
-        numpy_frames.clear()
+#             frames.clear()
+#             image_count = 0  
+#         image_count = 0
+#         numpy_frames.clear()
 
 
 def gst_hls(device_id, device_info):
